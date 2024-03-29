@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wtft-config
+data:
+  settings.json: |
+    var REFRESH_INTERVAL = 60000;
+    var API_URL = 'https://api.wheresthefuckingtrain.com';
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wtft
+spec:
+  selector:
+    matchLabels:
+      app: wtft
+  template:
+    metadata:
+      labels:
+        app: wtft
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      containers:
+        - name: wtft
+          image: ghcr.io/asg0451/wtft:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: wtft-config
+              mountPath: /config
+      volumes:
+        - name: wtft-config
+          configMap:
+            name: wtft-config
