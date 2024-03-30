@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: wtft-config
 data:
-  settings.json: |
+  settings.js: |
     var REFRESH_INTERVAL = 60000;
     var API_URL = 'https://api.wheresthefuckingtrain.com';
 
