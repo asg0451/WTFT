@@ -21,8 +21,6 @@ spec:
       labels:
         app: wtft
     spec:
-      nodeSelector:
-        kubernetes.io/arch: amd64
       containers:
         - name: wtft
           image: ghcr.io/asg0451/wtft:latest
