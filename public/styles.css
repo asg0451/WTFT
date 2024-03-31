@@ -92,7 +92,16 @@ section {
 	margin-bottom: 8px;
 }
 
-.station .train:nth-child(n+6) {
+/* toggle more trains support */
+#toggle-more-info-cnt {
+	margin: 10px 0 0 0;
+}
+
+#live-stations:not(.show-more-info) .station .train:nth-child(n+6) {
+	display: none;
+}
+
+#live-stations.show-more-info .station .train:nth-child(n+11) {
 	display: none;
 }
 
@@ -311,7 +320,7 @@ section {
 	position: relative;
 }
 
-#first-use-help div + div {
+#first-use-help div+div {
 	margin-top: 10px;
 }
 

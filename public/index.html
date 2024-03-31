@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="UTF-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -30,18 +31,20 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="http://wheresthefuckingtrain.com" />
 	<meta property="og:image" content="http://wheresthefuckingtrain.com/logo-300.png" />
-	<meta property="og:description" content="Real-time train arrival times for the NYC subway, so you can know where the fucking train is." />
-	
+	<meta property="og:description"
+		content="Real-time train arrival times for the NYC subway, so you can know where the fucking train is." />
+
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-XP4ZMG8FBN"></script>
 	<script>
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
 
-	  gtag('config', 'G-XP4ZMG8FBN');
+		gtag('config', 'G-XP4ZMG8FBN');
 	</script>
 </head>
+
 <body>
 	<div id="throbber">
 		<div class="logo-150">
@@ -84,7 +87,8 @@
 			<p>Tap on a station name to see options to add or remove it from your favorites.</p>
 
 			<h3>Source Code</h3>
-			<p>WTFT is open source and available on <a href="https://github.com/jonthornton/WTFT">GitHub</a>. It's designed to pull data from <a href="https://github.com/jonthornton/MTAPI">MTAPI</a>.</p>
+			<p>WTFT is open source and available on <a href="https://github.com/jonthornton/WTFT">GitHub</a>. It's
+				designed to pull data from <a href="https://github.com/jonthornton/MTAPI">MTAPI</a>.</p>
 		</section>
 
 		<div class="logo-150"></div>
@@ -118,6 +122,12 @@
 				<span class="button" id="try-again" onclick="window.location.reload()">Try again</span>
 				<a class="button" href="#menu">Menu</a>
 			</div>
+
+			<!-- here -->
+			<div id="toggle-more-info-cnt">
+				<a class="button" id="toggle-more-info">Show more</a>
+			</div>
+
 			<div id="live-stations"></div>
 			<div class="legend">
 				<h3>Legend</h3>
@@ -130,7 +140,8 @@
 					</span>
 				</div>
 				<div class="explanation current-location">
-					Showing nearby stations &ndash; <a href="#" id="permalink">permalink</a>. Use the <a href="#menu" id="permalink">menu</a> to see more stations.
+					Showing nearby stations &ndash; <a href="#" id="permalink">permalink</a>. Use the <a href="#menu"
+						id="permalink">menu</a> to see more stations.
 				</div>
 
 				<div class="explanation favorites">
@@ -150,7 +161,7 @@
 	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.min.js"></script>
 	<script src="dist/fastclick.min.js"></script>
 	<script>
-		$(function() {
+		$(function () {
 			FastClick.attach(document.body);
 		});
 	</script>
@@ -191,333 +202,329 @@
 	</script>
 
 	<script>
-	// don't pollute the global namespace!
-	(function(){
-		var DEFAULT_STATIONS = [
-			"635",	// union square
-			"127",	// times square
-			"235",	// barclays center
-			"229",	// fulton street
-		];
+		// don't pollute the global namespace!
+		(function () {
+			var DEFAULT_STATIONS = [
+				"635",	// union square
+				"127",	// times square
+				"235",	// barclays center
+				"229",	// fulton street
+			];
 
-		var stationSource = $("#station-template").html();
-		var stationTemplate = Handlebars.compile(stationSource);
+			var stationSource = $("#station-template").html();
+			var stationTemplate = Handlebars.compile(stationSource);
 
-		Handlebars.registerHelper('coords', function(location) {
-			return (+location[0].toFixed(6)) + "," + (+location[1].toFixed(6));
-		});
+			Handlebars.registerHelper('coords', function (location) {
+				return (+location[0].toFixed(6)) + "," + (+location[1].toFixed(6));
+			});
 
-		var mapBase;
-		if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPad/i))) {
-			mapBase = 'http://maps.apple.com?q=';
-		} else {
-			mapBase = 'https://maps.google.com?q=';
-		}
-
-		Handlebars.registerHelper('mapLink', function(location) {
-			return mapBase + (+location[0].toFixed(6)) + ',' + (+location[1].toFixed(6));
-		});
-
-		Handlebars.registerHelper('routeFilter', function(route_id) {
-			//
-			if (route_id === 'H') {
-				// The MTA calls the Rockaway shuttle route "H" internally
-				// but refers to it as S or RS externally
-				route_id = 'RS';
+			var mapBase;
+			if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPad/i))) {
+				mapBase = 'http://maps.apple.com?q=';
+			} else {
+				mapBase = 'https://maps.google.com?q=';
 			}
 
-			if (route_id.length == 2) {
-				return '<span>'+route_id.charAt(1)+'</span><span class="sub-route">'+route_id.charAt(0)+'</span>'
-			} else {
+			Handlebars.registerHelper('mapLink', function (location) {
+				return mapBase + (+location[0].toFixed(6)) + ',' + (+location[1].toFixed(6));
+			});
+
+			Handlebars.registerHelper('routeFilter', function (route_id) {
+				//
+				if (route_id === 'H') {
+					// The MTA calls the Rockaway shuttle route "H" internally
+					// but refers to it as S or RS externally
+					route_id = 'RS';
+				}
+
+				if (route_id.length == 2) {
+					return '<span>' + route_id.charAt(1) + '</span><span class="sub-route">' + route_id.charAt(0) + '</span>'
+				} else {
+					return route_id.charAt(0);
+				}
 				return route_id.charAt(0);
-			}
-			return route_id.charAt(0);
-		});
+			});
 
-		var refreshTimer, ajaxHandle, gUserPosition;
-		function route()
-		{
-			// start with a clean slate
-			window.scrollTo(0, 0);
-			clearTimeout(refreshTimer);
-			$('.error').hide();
-			$('.explanation').hide();
-			$('#trains').show();
-			$('#menu').hide();
-			if (ajaxHandle) {
-				ajaxHandle.abort();
-				ajaxHandle = null;
+			var refreshTimer, ajaxHandle, gUserPosition;
+			function route() {
+				// start with a clean slate
+				window.scrollTo(0, 0);
+				clearTimeout(refreshTimer);
+				$('.error').hide();
+				$('.explanation').hide();
+				$('#trains').show();
+				$('#menu').hide();
+				if (ajaxHandle) {
+					ajaxHandle.abort();
+					ajaxHandle = null;
+				}
+
+				if (localStorage.getItem('seenMenu')) {
+					$('#first-use-help').hide();
+				} else {
+					$('#first-use-help').show();
+				}
+
+				switch (window.location.hash) {
+					case '#menu':
+						$('#menu').slideDown(150);
+						$('#trains').hide();
+						hideThrobber();
+						localStorage.setItem('seenMenu', true);
+						return;
+
+					case '#current-location':
+						// use GPS
+						showThrobber();
+						gotoGPSLocation();
+						return;
+				}
+
+				var coords = window.location.hash.match(/#\/l\/((-)?\d+\.\d+),((-)?\d+\.\d+)/);
+				if (coords) {
+					// lat/lon from URL
+					loadTrainData(1 * coords[1], 1 * coords[3]);
+				} else if (window.location.hash.charAt(2) == 'r') {
+					// train route id
+					loadTrainData(window.location.hash.charAt(4));
+				} else {
+					// favorite stations
+					loadTrainData();
+					$('.explanation.favorites').show();
+				}
 			}
 
-			if (localStorage.getItem('seenMenu')) {
-				$('#first-use-help').hide();
-			} else {
-				$('#first-use-help').show();
+			$(window).on('hashchange', route);
+			route();
+
+			if (!('geolocation' in navigator)) {
+				$('.geolocate-only').hide();
 			}
 
-			switch (window.location.hash) {
-				case '#menu':
-					$('#menu').slideDown(150);
-					$('#trains').hide();
-					hideThrobber();
-					localStorage.setItem('seenMenu', true);
+			refreshRelativeTimes()
+			setInterval(refreshRelativeTimes, 10000);
+
+			$('#live-stations').on('click', '.fav-button.add', function (e) {
+				var $station = $(this).closest('.station');
+				$station.find('.fav-button').toggle();
+				addFavoriteStation($station.data('stationId'));
+				alert($station.find('h2 a').text() + ' has been added to your favorites.');
+			});
+
+			$('#live-stations').on('click', '.fav-button.remove', function (e) {
+				var $station = $(this).closest('.station');
+				$station.find('.fav-button').toggle();
+				removeFavoriteStation($station.data('stationId'));
+				alert($station.find('h2 a').text() + ' has been removed from your favorites.');
+			});
+
+			$('#live-stations').on('click', '.station h2 a', function (e) {
+				$(this).closest('.station').find('.actions').toggle(100);
+				e.preventDefault();
+			});
+
+			$('#toggle-more-info').on('click', function (e) {
+				$('#live-stations').toggleClass('show-more-info');
+				e.preventDefault();
+			});
+
+			function getFavoriteStations() {
+				var favs = localStorage.getItem('favoriteStations');
+				if (favs) {
+					favs = favs.split(',')
+				}
+
+				if (favs) {
+					return favs;
+				} else {
+					// initialize defaults
+					localStorage.setItem('favoriteStations', DEFAULT_STATIONS.join(','));
+					return DEFAULT_STATIONS;
+				}
+			}
+
+			function addFavoriteStation(id) {
+				id = id.toString();
+				var favs = getFavoriteStations() || [];
+				var index = favs.indexOf(id);
+				if (index > -1) {
 					return;
+				}
 
-				case '#current-location':
-					// use GPS
-					showThrobber();
-					gotoGPSLocation();
-					return;
-			}
-
-			var coords = window.location.hash.match(/#\/l\/((-)?\d+\.\d+),((-)?\d+\.\d+)/);
-			if (coords) {
-				// lat/lon from URL
-				loadTrainData(1*coords[1], 1*coords[3]);
-			} else if (window.location.hash.charAt(2) == 'r') {
-				// train route id
-				loadTrainData(window.location.hash.charAt(4));
-			} else {
-				// favorite stations
-				loadTrainData();
-				$('.explanation.favorites').show();
-			}
-		}
-
-		$(window).on('hashchange', route);
-		route();
-
-		if (!('geolocation' in navigator)) {
-			$('.geolocate-only').hide();
-		}
-
-		refreshRelativeTimes()
-		setInterval(refreshRelativeTimes, 10000);
-
-		$('#live-stations').on('click', '.fav-button.add', function(e){
-			var $station = $(this).closest('.station');
-			$station.find('.fav-button').toggle();
-			addFavoriteStation($station.data('stationId'));
-			alert($station.find('h2 a').text()+' has been added to your favorites.');
-		});
-
-		$('#live-stations').on('click', '.fav-button.remove', function(e){
-			var $station = $(this).closest('.station');
-			$station.find('.fav-button').toggle();
-			removeFavoriteStation($station.data('stationId'));
-			alert($station.find('h2 a').text()+' has been removed from your favorites.');
-		});
-
-		$('#live-stations').on('click', '.station h2 a', function(e){
-			$(this).closest('.station').find('.actions').toggle(100);
-			e.preventDefault();
-		});
-
-		function getFavoriteStations()
-		{
-			var favs = localStorage.getItem('favoriteStations');
-			if (favs) {
-				favs = favs.split(',')
-			}
-
-			if (favs) {
-				return favs;
-			} else {
-				// initialize defaults
-				localStorage.setItem('favoriteStations', DEFAULT_STATIONS.join(','));
-				return DEFAULT_STATIONS;
-			}
-		}
-
-		function addFavoriteStation(id)
-		{
-			id = id.toString();
-			var favs = getFavoriteStations() || [];
-			var index = favs.indexOf(id);
-			if (index > -1) {
-				return;
-			}
-
-			favs.unshift(id);
-			localStorage.setItem('favoriteStations', favs.join(','));
-		}
-
-		function removeFavoriteStation(id)
-		{
-			id = id.toString();
-			var favs = getFavoriteStations() || [];
-			var index = favs.indexOf(id);
-			if (index > -1) {
-				favs.splice(index, 1);
+				favs.unshift(id);
 				localStorage.setItem('favoriteStations', favs.join(','));
 			}
-		}
 
-		function gotoGPSLocation()
-		{
-			if ("geolocation" in navigator) {
-				var geolocate = {
-					success: function(position) {
-						clearTimeout(errorTimer);
-						gUserPosition = [position.coords.latitude, position.coords.longitude];
-						$('.explanation.current-location').show();
-						loadTrainData(position.coords.latitude, position.coords.longitude);
-					},
-					error: function(){
-						// error!
-						clearTimeout(errorTimer);
-						alert('WTFT couldn\'t find your current location. Pick a station from the list.');
-						replaceState('menu');
-						route();
-					},
-					options: {
-						enableHighAccuracy: false,
-						timeout: 10000,
-						maximumAge: 600000
-					}
+			function removeFavoriteStation(id) {
+				id = id.toString();
+				var favs = getFavoriteStations() || [];
+				var index = favs.indexOf(id);
+				if (index > -1) {
+					favs.splice(index, 1);
+					localStorage.setItem('favoriteStations', favs.join(','));
 				}
-				var errorTimer = setTimeout(geolocate.error, 20000);
-
-				navigator.geolocation.getCurrentPosition(geolocate.success, geolocate.error, geolocate.options);
-			} else {
-				replaceState('menu');
-				route();
 			}
-		}
 
-		function showThrobber()
-		{
-			$('#throbber').slideDown(150);
-		}
-
-		function hideThrobber()
-		{
-			$('#throbber').slideUp(150);
-		}
-
-		function ajaxErrorHandler(resp)
-		{
-			switch(resp.status) {
-				case 404:
-					if (window.location.hash.length === 0) {
-						// 404 on the homepage means that favorites are borked; reset them
-						localStorage.setItem('favoriteStations', DEFAULT_STATIONS.join(','));
-						route();
-						break;
+			function gotoGPSLocation() {
+				if ("geolocation" in navigator) {
+					var geolocate = {
+						success: function (position) {
+							clearTimeout(errorTimer);
+							gUserPosition = [position.coords.latitude, position.coords.longitude];
+							$('.explanation.current-location').show();
+							loadTrainData(position.coords.latitude, position.coords.longitude);
+						},
+						error: function () {
+							// error!
+							clearTimeout(errorTimer);
+							alert('WTFT couldn\'t find your current location. Pick a station from the list.');
+							replaceState('menu');
+							route();
+						},
+						options: {
+							enableHighAccuracy: false,
+							timeout: 10000,
+							maximumAge: 600000
+						}
 					}
+					var errorTimer = setTimeout(geolocate.error, 20000);
+
+					navigator.geolocation.getCurrentPosition(geolocate.success, geolocate.error, geolocate.options);
+				} else {
 					replaceState('menu');
 					route();
-					break;
-
-				case 500:
-				case 0:
-					$('#status').text('There was a problem communicating with the server.');
-					$('.error').show();
-			}
-
-			clearTimeout(refreshTimer);
-			hideThrobber();
-		}
-
-		function loadTrainData(lat, lon, noThrobber)
-		{
-			if (!noThrobber) {
-				showThrobber();
-			}
-
-			var endpoint, permalink;
-			if (lat && lon) {
-				// lat/lon
-				endpoint = API_URL+'/by-location?lat='+lat+'&lon='+lon;
-				permalink = '#/l/'+lat+','+lon;
-				if (window.location.hash != permalink) {
-					$('#permalink').prop('href', permalink);
 				}
-			} else if (lat) {
-				// train line
-				endpoint = API_URL+'/by-route/'+lat;
-			} else {
-				// saved/default favorites
-				var ids = getFavoriteStations();
-				endpoint = API_URL+'/by-id/'+ids.join(',');
 			}
 
-			ajaxHandle = $.getJSON(endpoint)
-				.done(function(resp){
-					hydrateStations(resp.data, resp.updated);
-				})
-				.fail(ajaxErrorHandler);
-
-			refreshTimer = setTimeout(function(){
-				loadTrainData(lat, lon, true);
-			}, REFRESH_INTERVAL);
-		}
-
-		function hydrateStations(data, updated)
-		{
-			if (new Date().getTime() - new Date(updated).getTime() > 300000) {
-				// stale data from MTA feed
-				$('#status').text('The MTA isn\'t providing accurate train data right now :(');
-				$('#status').show();
-			} else {
-				$('.error').hide();
+			function showThrobber() {
+				$('#throbber').slideDown(150);
 			}
 
-			$('#last-updated').attr('datetime', updated);
-
-			$('#live-stations .station').remove();
-			var container = $('#live-stations');
-
-			for (var i in data) {
-				var html = stationTemplate(data[i]);
-				container.append(html);
+			function hideThrobber() {
+				$('#throbber').slideUp(150);
 			}
 
-			// display add/remove favorites buttons
-			var favs = getFavoriteStations();
-			$('.station').each(function(i, el) {
-				var $el = $(el);
-				if (favs.indexOf($el.data('stationId').toString()) == -1) {
-					$el.find('.fav-button.remove').hide();
+			function ajaxErrorHandler(resp) {
+				switch (resp.status) {
+					case 404:
+						if (window.location.hash.length === 0) {
+							// 404 on the homepage means that favorites are borked; reset them
+							localStorage.setItem('favoriteStations', DEFAULT_STATIONS.join(','));
+							route();
+							break;
+						}
+						replaceState('menu');
+						route();
+						break;
+
+					case 500:
+					case 0:
+						$('#status').text('There was a problem communicating with the server.');
+						$('.error').show();
+				}
+
+				clearTimeout(refreshTimer);
+				hideThrobber();
+			}
+
+			function loadTrainData(lat, lon, noThrobber) {
+				if (!noThrobber) {
+					showThrobber();
+				}
+
+				var endpoint, permalink;
+				if (lat && lon) {
+					// lat/lon
+					endpoint = API_URL + '/by-location?lat=' + lat + '&lon=' + lon;
+					permalink = '#/l/' + lat + ',' + lon;
+					if (window.location.hash != permalink) {
+						$('#permalink').prop('href', permalink);
+					}
+				} else if (lat) {
+					// train line
+					endpoint = API_URL + '/by-route/' + lat;
 				} else {
-					$el.find('.fav-button.add').hide();
+					// saved/default favorites
+					var ids = getFavoriteStations();
+					endpoint = API_URL + '/by-id/' + ids.join(',');
 				}
-			});
 
-			refreshRelativeTimes();
-			hideThrobber();
-		}
+				ajaxHandle = $.getJSON(endpoint)
+					.done(function (resp) {
+						hydrateStations(resp.data, resp.updated);
+					})
+					.fail(ajaxErrorHandler);
 
-		function replaceState(url) {
-			if (!("replaceState" in history)) {
-				return;
+				refreshTimer = setTimeout(function () {
+					loadTrainData(lat, lon, true);
+				}, REFRESH_INTERVAL);
 			}
 
-			url = '/#'+url;
-			if (window.location.hash.length > 0) {
-				history.pushState({}, null, url);
-			} else {
-				history.replaceState({}, null, url);
-			}
-		}
-
-		function refreshRelativeTimes() {
-			var now = Date.now()
-			$('time[datetime]').each(function(){
-				$this = $(this);
-				var trainTime = new Date($this.attr('datetime'));
-				var minutesDiff = Math.ceil((trainTime.getTime() - now) / 60000);
-
-				if (minutesDiff == 0) {
-					$this.text('Now');
-				} else if (minutesDiff < 0) {
-					$this.text(Math.abs(minutesDiff) + ' min ago');
+			function hydrateStations(data, updated) {
+				if (new Date().getTime() - new Date(updated).getTime() > 300000) {
+					// stale data from MTA feed
+					$('#status').text('The MTA isn\'t providing accurate train data right now :(');
+					$('#status').show();
 				} else {
-					$this.text(minutesDiff + ' min');
+					$('.error').hide();
 				}
-			});
-		}
-	})();
+
+				$('#last-updated').attr('datetime', updated);
+
+				$('#live-stations .station').remove();
+				var container = $('#live-stations');
+
+				for (var i in data) {
+					var html = stationTemplate(data[i]);
+					container.append(html);
+				}
+
+				// display add/remove favorites buttons
+				var favs = getFavoriteStations();
+				$('.station').each(function (i, el) {
+					var $el = $(el);
+					if (favs.indexOf($el.data('stationId').toString()) == -1) {
+						$el.find('.fav-button.remove').hide();
+					} else {
+						$el.find('.fav-button.add').hide();
+					}
+				});
+
+				refreshRelativeTimes();
+				hideThrobber();
+			}
+
+			function replaceState(url) {
+				if (!("replaceState" in history)) {
+					return;
+				}
+
+				url = '/#' + url;
+				if (window.location.hash.length > 0) {
+					history.pushState({}, null, url);
+				} else {
+					history.replaceState({}, null, url);
+				}
+			}
+
+			function refreshRelativeTimes() {
+				var now = Date.now()
+				$('time[datetime]').each(function () {
+					$this = $(this);
+					var trainTime = new Date($this.attr('datetime'));
+					var minutesDiff = Math.ceil((trainTime.getTime() - now) / 60000);
+
+					if (minutesDiff == 0) {
+						$this.text('Now');
+					} else if (minutesDiff < 0) {
+						$this.text(Math.abs(minutesDiff) + ' min ago');
+					} else {
+						$this.text(minutesDiff + ' min');
+					}
+				});
+			}
+		})();
 	</script>
 </body>
+
 </html>
